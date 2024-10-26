@@ -3,13 +3,14 @@
 const { User } = require("../models");
 const bcrypt = require("bcryptjs");
 
+let options = {};
+if (process.env.NODE_ENV === "production") {
+    options.schema = process.env.SCHEMA;
+    options.tableName = "Users";
+}
+
 module.exports = {
     async up(queryInterface, Sequelize) {
-        let options = {};
-        if (process.env.NODE_ENV === "production" && process.env.SCHEMA) {
-            options.schema = process.env.SCHEMA;
-        }
-        options.tableName = "Users";
 
         try {
             await User.bulkCreate(
@@ -65,7 +66,7 @@ module.exports = {
                         updatedAt: new Date(),
                     },
                 ],
-                { validate: true, ...options }
+                { validate: true }
             );
         } catch (error) {
             console.error("Error seeding users:", error.message);
@@ -73,15 +74,10 @@ module.exports = {
     },
 
     async down(queryInterface, Sequelize) {
-        let options = {};
-        if (process.env.NODE_ENV === "production" && process.env.SCHEMA) {
-            options.schema = process.env.SCHEMA;
-        }
-        options.tableName = "Users";
 
         const Op = Sequelize.Op;
         return queryInterface.bulkDelete(
-            options.tableName,
+            options,
             {
                 username: {
                     [Op.in]: [
